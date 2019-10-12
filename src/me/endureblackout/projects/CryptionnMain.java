@@ -1,11 +1,11 @@
 package me.endureblackout.projects;
 
+import java.util.List;
 import java.util.Scanner;
 
 import me.endureblackout.projects.resources.SQLCommandHandler;
 
-//TODO: Add security code to be attached with the Message object.
-//TODO: Setup database to store ONLY the message and security code attached to the message.
+//TODO: Fix padding when entering messages into database... otherwise can't decrypt properly.
 public class CryptionnMain {
 	public static void main(String[] args) {
 		SQLCommandHandler sqlH = new SQLCommandHandler();
@@ -16,24 +16,23 @@ public class CryptionnMain {
 
 		switch (scan.nextLine().toLowerCase()) {
 		case "encrypt":
-			
+
 			System.out.println("Enter your message you would like to encrypt: ");
 			String stringMessage = scan.nextLine();
 
-			/*
-			 * System.out.println("Enter a code to lock your message: "); int code =
-			 * scan.nextInt();
-			 */
-			Message message = new Message(stringMessage, 55378);
+			System.out.println("Enter a code to lock your message: ");
+			int code = scan.nextInt();
+
+			Message message = new Message(stringMessage, code);
 
 			System.out.println(
 					"Enter the 16 character secret key to use while encrypting (REMEMBER THIS OR YOU WILL NOT BE ABLE TO DECRYPT):");
-			String key = scan.nextLine();
+			String key = scan.next();
 			Encryptor encryptor = new Encryptor(key, message);
 
 			System.out.println("Would you like to start encrypting? (Y/N):");
 
-			String response = scan.nextLine();
+			String response = scan.next();
 
 			switch (response.toLowerCase()) {
 			case "y":
@@ -44,7 +43,7 @@ public class CryptionnMain {
 				System.out.println("Uploading code and message to database...");
 
 				if (sqlH.executeSQLUpdate("INSERT INTO `messages` (`code`, `message`) VALUES ('" + message.code + "', '"
-						+ encryptedMessage + "')")) {
+						+ encryptedMessage + "');")) {
 					System.out.println("Uploading to database sucessful.\n Closing connection...");
 					sqlH.connectionClose();
 				}
@@ -54,13 +53,24 @@ public class CryptionnMain {
 				System.out.println("For security reasons, program is ending...");
 				break;
 			}
-			
+
 			break;
 		case "decrypt":
-			
+
 			System.out.println("Enter the code for the message you want to decrypt: ");
-			int code = scan.nextInt();
-			
+			code = scan.nextInt();
+
+			System.out.println("Enter the secrect password for the message to decrypt it: ");
+			String password = scan.next();
+
+			Decryptor decryptor = new Decryptor(password, code);
+
+			List<String> messages = decryptor.deryptMessage();
+
+			for (int i = 0; i < messages.size(); i++) {
+				System.out.println(messages.get(i));
+			}
+
 			break;
 		}
 
