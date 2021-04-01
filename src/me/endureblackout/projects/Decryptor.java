@@ -59,6 +59,8 @@ public class Decryptor {
     } catch (IllegalBlockSizeException | BadPaddingException | SQLException e) {
       e.printStackTrace();
     }
+    
+    sqlH.connectionClose();
 
     return message;
   }
